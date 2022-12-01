@@ -6,17 +6,28 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
+library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Problem 2
+The Washington Post has gathered data on homicides in 50 large U.S. cities.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+### create Create a city_state variable and a binary variable indicating whether the homicide is solved. 
+```{r homicides}
+homicide_df = 
+  read_csv("./Data/homicide-data.csv") %>% 
+  mutate(
+    city_state = str_c(city, state, sep = ","),
+    victim_age = as.numeric(victim_age),
+    status = case_when(
+      disposition == "Closed without arrest" | disposition == "Open/No arrest"   ~ "unsolved",
+      TRUE ~ "solved")) %>% 
+    filter(!city_state %in% c("Tulsa,AL", "Dallas,TX", "Phoenix,AZ", "Kansas City,MO"))%>% 
+    filter(victim_race == "White"| victim_race == "Black")
 ```
+The binary variable indicating whether the homicide is solved is called " status". Some cities have been omitted.
+
+
 
 
