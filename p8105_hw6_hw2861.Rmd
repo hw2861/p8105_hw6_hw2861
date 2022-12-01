@@ -129,3 +129,16 @@ bwt_regression1_df=
   modelr::add_residuals(bwt_regression1) 
 ```
 
+### Show a plot of model residuals against fitted values
+```{r}
+bwt_regression1_plot =
+bwt_regression1_df %>% 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = 0.5)+
+  labs(x = "Fitted values",
+    y = "Residuals",
+    title = "Model residuals against fitted values")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+bwt_regression1_plot
+```
