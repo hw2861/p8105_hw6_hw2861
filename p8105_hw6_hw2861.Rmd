@@ -89,3 +89,7 @@ city_glm %>%
        x = "Estimated ORs comparing male victims to female victims")+ 
    theme(axis.text.y = element_text(size=7))
 ```
+
+
+
+## Problem 3
