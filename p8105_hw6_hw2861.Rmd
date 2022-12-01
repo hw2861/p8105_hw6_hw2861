@@ -111,3 +111,21 @@ birthweight_df =
     mrace = recode(frace,'1' = "White", '2' = "Black", '3' = "Asian", '4' = "Puerto Rican", '8' = "Other", '9' = "Unknown"),
     mrace = as_factor(frace) )
 ```
+
+### Propose a regression model for birthweight. 
+* I googled the "important factors that influence birth weight of newborns". Some of the widely mentioned hypothesized predictors are "mother's weight at birth", "Gender" and " ethnicity".
+
+According to the hypothesized structure for the factors that underly birthweight, i proposed a regression model for **bwt**.
+```{r}
+bwt_regression1 =
+  lm(bwt ~ babysex + delwt  + mrace + frace, data = birthweight_df)
+```
+
+### Create predictions and residuals for the model
+```{r}
+bwt_regression1_df=
+  birthweight_df %>% 
+  modelr::add_predictions(bwt_regression1) %>% 
+  modelr::add_residuals(bwt_regression1) 
+```
+
