@@ -89,7 +89,25 @@ city_glm %>%
        x = "Estimated ORs comparing male victims to female victims")+ 
    theme(axis.text.y = element_text(size=7))
 ```
+* Among different cities, Most of the estimate ORs are less than 1. It means that there are fewer male victims than female victims in most of the cities.
 
+* At the same time, we should note that the 95 confidence interval for the estimate OR in many cities cross the null value. So we cannot draw any significant conclusions based on the glm.
 
 
 ## Problem 3
+In this problem, we will analyze data gathered to understand the effects of several variables on a child’s birthweight. 
+
+### Load and clean the data for regression analysis
+```{r}
+birthweight_df = 
+  read_csv("./Data/birthweight.csv") %>% 
+   mutate(
+    babysex = recode(babysex,'1' = "male", '2' = "female"),
+    babysex = as_factor(babysex),
+    frace = recode(frace,'1' = "White", '2' = "Black", '3' = "Asian", '4' = "Puerto Rican", '8' = "Other", '9' = "Unknown"),
+    frace = as_factor(frace),
+    malform = recode(malform, '0' = "absent", '1' = "present"),
+    malform = as_factor(malform),
+    mrace = recode(frace,'1' = "White", '2' = "Black", '3' = "Asian", '4' = "Puerto Rican", '8' = "Other", '9' = "Unknown"),
+    mrace = as_factor(frace) )
+```
