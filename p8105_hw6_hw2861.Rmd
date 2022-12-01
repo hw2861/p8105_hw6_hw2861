@@ -21,12 +21,33 @@ homicide_df =
     city_state = str_c(city, state, sep = ","),
     victim_age = as.numeric(victim_age),
     status = case_when(
-      disposition == "Closed without arrest" | disposition == "Open/No arrest"   ~ "unsolved",
-      TRUE ~ "solved")) %>% 
+      disposition == "Closed without arrest" | disposition == "Open/No arrest"   ~ 0,
+      TRUE ~ 1)) %>% 
     filter(!city_state %in% c("Tulsa,AL", "Dallas,TX", "Phoenix,AZ", "Kansas City,MO"))%>% 
     filter(victim_race == "White"| victim_race == "Black")
 ```
 The binary variable indicating whether the homicide is solved is called " status". Some cities have been omitted.
+
+
+### For the city of Baltimore, MD, use the glm function to fit a logistic regression.
+
+* Resolved vs unresolved as the outcome and victim age, sex and race as predictors.
+```{r}
+balt_glm = 
+  homicide_df %>% 
+  filter(city_state == "Baltimore,MD") %>% 
+  glm(status ~ victim_age + victim_race + victim_sex, data = ., family = binomial())  
+
+
+  broom::tidy(balt_glm) %>% 
+  mutate(
+    OR = exp(estimate),
+    CI_lower = exp(estimate - 1.96 * std.error),
+    CI_upper = exp(estimate + 1.96 * std.error)) %>% 
+  select(term, OR, CI_lower,CI_upper) %>% 
+  filter(term == "victim_sexMale") %>% 
+  knitr::kable(digits = 3)
+```
 
 
 
