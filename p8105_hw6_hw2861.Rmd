@@ -113,10 +113,9 @@ balt_glm =
 ```{r}
 city_glm = 
   homicide_df %>% 
-  group_by(city_state)%>% 
-  nest() %>% 
+  nest(data = -city_state) %>% 
   mutate(
-    models= map(data, ~glm(status ~ victim_age + victim_race + victim_sex, data = .x)),
+    models= map(data, ~glm(status ~ victim_age + victim_race + victim_sex, data = .x,family = binomial())),
     results = map(models, broom::tidy)) %>% 
   select(city_state, results) %>% 
   unnest(results) %>% 
@@ -124,11 +123,12 @@ city_glm =
     OR = exp(estimate),
     CI_lower = exp(estimate - 1.96 * std.error),
     CI_upper = exp(estimate + 1.96 * std.error)) %>% 
-  select(term, OR, CI_lower,CI_upper) %>% 
   filter(term == "victim_sexMale") %>% 
   select(city_state, term, OR, CI_lower,CI_upper) 
 
-is.data.frame(city_glm)
+
+city_glm %>% 
+  knitr::kable(digits = 3,  col.names = c("City", "Covariates", "Estimated Adjusted OR", "95CI lower bound", "95CI upper bound"))
 ```
 I created a dataframe with estimated ORs and CIs for each city.
 The adjusted odds ratio (and CI) is about solving homicides comparing male victims to female victims. 
@@ -147,9 +147,9 @@ city_glm %>%
    theme(axis.text.y = element_text(size=7))
 ```
 
-* Among different cities, Most of the estimate ORs are less than 1. It means that there are fewer male victims than female victims in most of the cities.
+* Among different cities, Most of the estimate ORs are less than 1. It means that there are fewer cases for male victims than for female victims are resolved in most of the cities.
 
-* At the same time, we should note that the 95 confidence interval for the estimate OR in many cities cross the null value. So we cannot draw any significant conclusions based on the glm.
+* At the same time, we should note that the 95 confidence interval for the estimate OR in many cities cross the null value. For those 95CI cross the null value,we cannot draw any significant conclusions based on the glm.
 
 
 ## Problem 3
