@@ -168,8 +168,11 @@ birthweight_df =
     malform = recode(malform, '0' = "absent", '1' = "present"),
     malform = as_factor(malform),
     mrace = recode(frace,'1' = "White", '2' = "Black", '3' = "Asian", '4' = "Puerto Rican", '8' = "Other"),
-    mrace = as_factor(frace) )
+    mrace = as_factor(frace) ,
+    bwt = bwt * 0.0022046)
 ```
+
+During cleaning, I converted the units of bwt from grams to pounds.
 
 ### Propose a regression model for birthweight. 
 * I googled the "important factors that influence birth weight of newborns". Some of the widely mentioned hypothesized predictors are "mother’s weight at birth" and  "Gender". 
@@ -177,12 +180,22 @@ birthweight_df =
 * Also, other body measurements of the newborn are the important reference in birth weight. So, i include the head circumference as predictors.
 
 According to the hypothesized structure for the factors that underly birthweight, i proposed a regression model for **bwt**.
+
 ```{r}
 bwt_model1 =
   lm(bwt ~ babysex + delwt + bhead, data = birthweight_df)
 ```
 
-### Create predictions and residuals for the model
+```{r}
+bwt_model1 %>% 
+  broom::tidy() %>% 
+  knitr::kable(digits = 3)
+```
+
+For our hypothetical model1, 
+I tested the p value of the variables. ensure that the p value of each variable is less than 0.05.
+
+### Create predictions and residuals for the model1
 ```{r}
 bwt_model1_df=
   birthweight_df %>% 
@@ -196,9 +209,10 @@ bwt_model1_plot =
 bwt_model1_df %>% 
   ggplot(aes(x = pred, y = resid)) +
   geom_point(alpha = 0.5)+
+  geom_hline(yintercept = 0) +
   labs(x = "Fitted values",
     y = "Residuals",
-    title = "Model residuals against fitted values")+
+    title = "Model residuals against fitted values(Model1)")+
   theme(plot.title = element_text(hjust = 0.5))
 
 bwt_model1_plot
@@ -207,13 +221,61 @@ bwt_model1_plot
 ### Compare my model to two others:
 * One using length at birth and gestational age as predictors (main effects only)
 
-* One using head circumference, length, sex, and all interactions (including the three-way interaction) between these
-
 ```{r}
 bwt_model2 = lm(bwt ~ blength + gaweeks, data = birthweight_df)
+
+bwt_model2 %>% 
+  broom::tidy() %>% 
+  knitr::kable(digits = 3)
+
+
+bwt_model2_df=
+  birthweight_df %>% 
+  modelr::add_predictions(bwt_model2) %>% 
+  modelr::add_residuals(bwt_model2) 
+
+bwt_model2_plot =
+bwt_model2_df %>% 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = 0.5)+
+  geom_hline(yintercept = 0) +
+  labs(x = "Fitted values",
+    y = "Residuals",
+    title = "Model residuals against fitted values(Model2)")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+bwt_model2_plot
+```
+
+
+* One using head circumference, length, sex, and all interactions (including the three-way interaction) between these
+```{r}
 bwt_model3 = lm(bwt ~ bhead * blength * babysex, data = birthweight_df)
 
+bwt_model3 %>% 
+  broom::tidy() %>% 
+  knitr::kable(digits = 3)
 
+bwt_model3_df=
+  birthweight_df %>% 
+  modelr::add_predictions(bwt_model3) %>% 
+  modelr::add_residuals(bwt_model3) 
+
+bwt_model3_plot =
+bwt_model3_df %>% 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = 0.5)+
+  geom_hline(yintercept = 0) +
+  labs(x = "Fitted values",
+    y = "Residuals",
+    title = "Model residuals against fitted values(Model3)")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+bwt_model3_plot
+```
+
+
+```{r}
 cv_df = 
   crossv_mc(birthweight_df, 100) %>% 
   mutate(
@@ -232,7 +294,7 @@ cv_df =
     rmse_model3 = map2_dbl(bwt_model3, test, ~rmse(model = .x, data = .y)))
 ```
 
-### Finally, I’ll plot the prediction error distribution for each candidate model.
+### Finally, I’ll plot the rmse distribution for each candidate model.
 
 ```{r}
 cv_df %>% 
@@ -247,5 +309,5 @@ cv_df %>%
 ```
 
 Based on the results of rmse,
-I would choose **bwt_model3** as the best fit model among the three.
+I would choose **bwt_model3** as the best fit model among the three model.
 Since it has the lowest root mean squared error.
